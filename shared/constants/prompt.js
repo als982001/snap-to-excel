@@ -14,3 +14,4 @@ quantity가 인식 불가한 경우 0으로 반환하세요.
 `;
 
 export const GEMINI_MODEL = "gemini-2.0-flash";
+export const GEMINI_3_FLASH_PREVIEW = "gemini-3-flash-preview";
