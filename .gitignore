@@ -15,6 +15,7 @@ build
 *.local
 .env
 .react-router
+docs/*
 
 # Editor directories and files
 .vscode/*
