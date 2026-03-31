@@ -12,5 +12,6 @@ export default [
   // 인증 필요 라우트
   layout("./components/ProtectedLayout.tsx", [
     index("./features/dashboard/pages/dashboard-page.tsx"),
+    route("/history", "./features/history/pages/history-page.tsx"),
   ]),
 ] satisfies RouteConfig;
