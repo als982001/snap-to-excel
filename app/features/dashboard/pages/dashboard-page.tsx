@@ -10,7 +10,7 @@ import { useImageExtract } from "../hooks/useImageExtract";
 import { useSaveExtraction } from "../hooks/useSaveExtraction";
 
 export default function DashboardPage() {
-  const [uploadedFile, setUploadedFile] = useState<IUploadedFile | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<IUploadedFile[]>([]);
   const [extractedItems, setExtractedItems] = useState<IProduct[]>([]);
 
   const {
@@ -22,29 +22,31 @@ export default function DashboardPage() {
 
   useEffect(() => {
     return () => {
-      if (uploadedFile?.preview) {
-        URL.revokeObjectURL(uploadedFile.preview);
-      }
+      uploadedFiles.forEach((f) => URL.revokeObjectURL(f.preview));
     };
-  }, [uploadedFile]);
+  }, [uploadedFiles]);
 
-  const handleFileChange = (file: IUploadedFile | null) => {
-    setUploadedFile(file);
+  const handleFilesChange = (files: IUploadedFile[]) => {
+    setUploadedFiles(files);
     setExtractedItems([]);
     resetExtract();
   };
 
   const handleExtract = () => {
-    if (!uploadedFile) return;
+    if (uploadedFiles.length === 0) return;
+
+    const files = uploadedFiles.map((f) => f.file);
 
     extract(
-      { file: uploadedFile.file },
+      { files },
       {
         onSuccess: (data) => {
           setExtractedItems(data.items);
 
           if (data.items.length > 0) {
-            toast.success("추출이 완료되었습니다.");
+            toast.success(
+              `${uploadedFiles.length}장에서 ${data.items.length}개 상품을 추출했습니다.`
+            );
           } else {
             toast.info("상품을 찾지 못했습니다.");
           }
@@ -57,13 +59,17 @@ export default function DashboardPage() {
   };
 
   const handleSave = () => {
-    if (!uploadedFile || extractedItems.length === 0) return;
+    if (uploadedFiles.length === 0 || extractedItems.length === 0) return;
+
+    const imageNames = uploadedFiles.map((f) => f.file.name).join(", ");
 
     save(
-      { imageName: uploadedFile.file.name, items: extractedItems },
+      { imageName: imageNames, items: extractedItems },
       {
         onSuccess: () => {
-          setUploadedFile(null);
+          uploadedFiles.forEach((f) => URL.revokeObjectURL(f.preview));
+
+          setUploadedFiles([]);
           setExtractedItems([]);
           resetExtract();
         },
@@ -76,11 +82,11 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold text-text-primary">Dashboard</h1>
 
       <ImageUploader
-        uploadedFile={uploadedFile}
-        onFileChange={handleFileChange}
+        uploadedFiles={uploadedFiles}
+        onFilesChange={handleFilesChange}
       />
 
-      {uploadedFile && extractedItems.length === 0 && (
+      {uploadedFiles.length > 0 && extractedItems.length === 0 && (
         <button
           type="button"
           onClick={handleExtract}
@@ -90,10 +96,10 @@ export default function DashboardPage() {
           {isExtracting ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              추출 중...
+              추출 중... ({uploadedFiles.length}장)
             </>
           ) : (
-            "추출하기"
+            `추출하기 (${uploadedFiles.length}장)`
           )}
         </button>
       )}
