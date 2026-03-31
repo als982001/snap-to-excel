@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import type { IProduct, IUploadedFile } from "~/types";
 
@@ -28,6 +28,14 @@ export default function DashboardPage() {
 
   const handleFilesChange = (files: IUploadedFile[]) => {
     setUploadedFiles(files);
+    setExtractedItems([]);
+    resetExtract();
+  };
+
+  const handleFilesReset = () => {
+    uploadedFiles.forEach((f) => URL.revokeObjectURL(f.preview));
+
+    setUploadedFiles([]);
     setExtractedItems([]);
     resetExtract();
   };
@@ -87,21 +95,33 @@ export default function DashboardPage() {
       />
 
       {uploadedFiles.length > 0 && extractedItems.length === 0 && (
-        <button
-          type="button"
-          onClick={handleExtract}
-          disabled={isExtracting}
-          className="w-full flex items-center justify-center gap-2 h-12 rounded-full bg-primary hover:bg-gray-800 text-white font-bold transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isExtracting ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              추출 중... ({uploadedFiles.length}장)
-            </>
-          ) : (
-            `추출하기 (${uploadedFiles.length}장)`
-          )}
-        </button>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={handleFilesReset}
+            disabled={isExtracting}
+            className="flex items-center justify-center gap-2 h-12 px-6 rounded-full border border-border-color bg-white hover:bg-surface-dark text-text-primary font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RotateCcw className="w-4 h-4" />
+            재업로드
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExtract}
+            disabled={isExtracting}
+            className="flex-1 flex items-center justify-center gap-2 h-12 rounded-full bg-primary hover:bg-gray-800 text-white font-bold transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isExtracting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                추출 중... ({uploadedFiles.length}장)
+              </>
+            ) : (
+              `추출하기 (${uploadedFiles.length}장)`
+            )}
+          </button>
+        </div>
       )}
 
       <ProductTable items={extractedItems} onItemsChange={setExtractedItems} />
