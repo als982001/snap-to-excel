@@ -54,7 +54,7 @@ export function ExtractionDetail({
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => handleDownloadXlsx({ items, imageName, createdAt })}
+            onClick={() => handleDownloadXlsx({ items })}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
