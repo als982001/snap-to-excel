@@ -19,6 +19,9 @@ function formatDownloadDate(): string {
  */
 export async function downloadXlsx({ items }: { items: IProduct[] }) {
   const response = await fetch("/templates/발주요청서.xlsx");
+
+  if (!response.ok) throw new Error("템플릿 파일을 불러올 수 없습니다.");
+
   const arrayBuffer = await response.arrayBuffer();
 
   const workbook = new ExcelJS.Workbook();
