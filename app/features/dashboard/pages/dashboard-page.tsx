@@ -111,6 +111,7 @@ export default function DashboardPage() {
       <ImageUploader
         uploadedFiles={uploadedFiles}
         onFilesChange={handleFilesChange}
+        isProcessing={isProcessing}
       />
 
       {uploadedFiles.length > 0 && (
