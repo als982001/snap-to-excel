@@ -17,15 +17,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const validateUser = async () => {
       try {
         const { data, error } = await supabase.auth.getUser();
 
+        if (!isMounted) return;
+
         if (error) {
-          const isAuthError = error.status === 401 || error.status === 403;
+          const isAuthError =
+            error.status != null &&
+            (error.status === 401 || error.status === 403);
 
           if (isAuthError) {
-            await supabase.auth.signOut();
+            const { error: signOutError } = await supabase.auth.signOut();
+
+            if (signOutError) console.error(signOutError);
+
+            if (!isMounted) return;
             setUser(null);
           } else {
             console.error(error);
@@ -34,6 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               data: { session },
             } = await supabase.auth.getSession();
 
+            if (!isMounted) return;
             setUser(session?.user ?? null);
           }
         } else {
@@ -46,9 +57,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           data: { session },
         } = await supabase.auth.getSession();
 
+        if (!isMounted) return;
         setUser(session?.user ?? null);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
@@ -60,7 +72,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signInWithGoogle = async () => {
