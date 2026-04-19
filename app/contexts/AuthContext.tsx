@@ -48,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(session?.user ?? null);
           }
         } else {
+          if (!isMounted) return;
           setUser(data.user);
         }
       } catch (error) {
