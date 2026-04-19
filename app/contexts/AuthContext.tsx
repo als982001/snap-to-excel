@@ -17,18 +17,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth
-      .getSession()
-      .then(({ data: { session } }) => {
-        setUser(session?.user ?? null);
-      })
-      .catch((error) => {
+    let isMounted = true;
+
+    const validateUser = async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+
+        if (!isMounted) return;
+
+        if (error) {
+          const isAuthError =
+            error.status != null &&
+            (error.status === 401 || error.status === 403);
+
+          if (isAuthError) {
+            const { error: signOutError } = await supabase.auth.signOut();
+
+            if (signOutError) console.error(signOutError);
+
+            if (!isMounted) return;
+            setUser(null);
+          } else {
+            console.error(error);
+
+            const {
+              data: { session },
+            } = await supabase.auth.getSession();
+
+            if (!isMounted) return;
+            setUser(session?.user ?? null);
+          }
+        } else {
+          if (!isMounted) return;
+          setUser(data.user);
+        }
+      } catch (error) {
         console.error(error);
-        setUser(null);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!isMounted) return;
+        setUser(session?.user ?? null);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    validateUser();
 
     const {
       data: { subscription },
@@ -36,7 +73,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signInWithGoogle = async () => {
