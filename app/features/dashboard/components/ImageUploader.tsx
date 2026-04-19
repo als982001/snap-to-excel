@@ -11,11 +11,13 @@ const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 interface IImageUploaderProps {
   uploadedFiles: IUploadedFile[];
   onFilesChange: (files: IUploadedFile[]) => void;
+  isProcessing?: boolean;
 }
 
 export function ImageUploader({
   uploadedFiles,
   onFilesChange,
+  isProcessing = false,
 }: IImageUploaderProps) {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -38,6 +40,7 @@ export function ImageUploader({
     },
     maxSize: MAX_FILE_SIZE_BYTES,
     multiple: true,
+    disabled: isProcessing,
   });
 
   const handleRemove = (index: number) => {
@@ -58,7 +61,8 @@ export function ImageUploader({
               <button
                 type="button"
                 onClick={() => handleRemove(index)}
-                className="absolute top-1.5 right-1.5 p-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors opacity-0 group-hover:opacity-100 z-10"
+                disabled={isProcessing}
+                className="absolute top-1.5 right-1.5 p-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors opacity-0 group-hover:opacity-100 z-10 disabled:opacity-0 disabled:pointer-events-none"
               >
                 <X className="w-3.5 h-3.5 text-text-primary" />
               </button>
@@ -77,7 +81,11 @@ export function ImageUploader({
 
           <div
             {...getRootProps()}
-            className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 hover:border-primary p-3 cursor-pointer transition-colors min-h-[148px]"
+            className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 p-3 transition-colors min-h-[148px] ${
+              isProcessing
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:border-primary cursor-pointer"
+            }`}
           >
             <input {...getInputProps()} />
             <CloudUpload className="w-6 h-6 text-text-secondary mb-1" />
